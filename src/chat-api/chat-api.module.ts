@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ChatApiLogicController } from './chat-api-logic/chat-api-logic.controller';
-import { ChatApiLogicService } from './chat-api-logic/chat-api-logic.service';
+import { SuccessController } from './success/success.controller';
+import { SuccessService } from './success/success.service';
 import { HttpModule } from '@nestjs/axios';
 import { HttpConfigService } from 'src/httpService.config';
+import { CanceledController } from './canceled/canceled.controller';
+import { CanceledService } from './canceled/canceled.service';
 
 @Module({
   imports: [
@@ -11,7 +13,7 @@ import { HttpConfigService } from 'src/httpService.config';
     }),
     ChatApiModule,
   ],
-  controllers: [ChatApiLogicController],
-  providers: [ChatApiLogicService],
+  controllers: [SuccessController, CanceledController],
+  providers: [SuccessService, CanceledService],
 })
 export class ChatApiModule {}

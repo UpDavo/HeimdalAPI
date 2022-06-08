@@ -1,12 +1,12 @@
 import { Controller, Post, HttpStatus, Param, Res, Body } from '@nestjs/common';
-import { ChatApiLogicService } from './chat-api-logic.service';
+import { SuccessService } from './success.service';
 import { Logger } from '@nestjs/common';
 import { ChatAPIRequestTemplate } from '../chat-api-dto/chat-api-request-template';
 
-@Controller('chat-api-logic')
-export class ChatApiLogicController {
+@Controller('success')
+export class SuccessController {
   private readonly logger = new Logger('chat-api-logic');
-  constructor(private ChatApiLogicService: ChatApiLogicService) {}
+  constructor(private SuccessService: SuccessService) {}
 
   @Post()
   sendWhatsAppTemplate(
@@ -14,7 +14,7 @@ export class ChatApiLogicController {
     @Res() response,
   ) {
     this.logger.warn('sendWhatsAppTemplate');
-    this.ChatApiLogicService.sendWhatsAppTemplate(request)
+    this.SuccessService.sendWhatsAppTemplate(request)
       .then((res) => {
         console.log(res.data);
         response.status(HttpStatus.CREATED).json(res.data);
