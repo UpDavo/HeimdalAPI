@@ -3,15 +3,17 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import { BASEURL } from 'src/common/api-resource';
 import { firstValueFrom } from 'rxjs';
-import { ChatAPIRequestTemplate } from '../chat-api-dto/chat-api-request-template';
-import { ChatAPIResponseTemplate } from '../chat-api-dto/chat-api-response-template';
+import { ClientData } from '../dto/client_data';
+import { PocData } from '../dto/poc_data';
 
 @Injectable()
 export class SuccessService {
   constructor(private readonly httpService: HttpService) {}
 
   //TELEGRAM - ALERTS TO POCS
-  async telegram_group_canceled_alert(clientData: any, chatId: string) {
+
+  //Sends a canceled alert to pocs
+  async telegram_group_canceled_alert(clientData: ClientData, chatId: string) {
     const request = {
       chat_id: chatId,
       text: `El pedido con número de orden ${clientData.idOrden} Ha sido cancelado`,
@@ -26,12 +28,12 @@ export class SuccessService {
     return data;
   }
 
+  //sends a succes alert to pocs
   async telegram_group_success_poc_alert(
-    clientData: any,
-    pocData: any,
+    clientData: ClientData,
+    pocData: PocData,
   ): Promise<AxiosResponse> {
-    const coordenadas: Array<number> =
-      clientData.direccion.coordenadas.split(',');
+    const coordenadas: Array<any> = clientData.direccion.coordenadas.split(',');
     const request = {
       chat_id: pocData.tchatId,
       text: `
@@ -72,12 +74,11 @@ export class SuccessService {
   }
 
   async telegram_group_success_admin_alert(
-    clientData: any,
-    pocData: any,
+    clientData: ClientData,
+    pocData: PocData,
     chatId: string,
   ): Promise<AxiosResponse> {
-    const coordenadas: Array<number> =
-      clientData.direccion.coordenadas.split(',');
+    const coordenadas: Array<any> = clientData.direccion.coordenadas.split(',');
     const request = {
       chat_id: chatId,
       text: `
@@ -119,8 +120,8 @@ export class SuccessService {
   }
 
   async telegram_group_success_payment_link_alert(
-    clientData: any,
-    pocData: any,
+    clientData: ClientData,
+    pocData: PocData,
     payphoneData: any,
     chatId: string,
     state: string,
@@ -161,9 +162,8 @@ export class SuccessService {
 
   //CHATAPI - ALERTS TO CLIENTS
   async chat_api_individual_payment_link_alert(
-    clientData: any,
+    clientData: ClientData,
     urlPayment: string,
-    chatId: string,
   ): Promise<AxiosResponse> {
     const request = {};
     const data = await firstValueFrom(
@@ -176,7 +176,7 @@ export class SuccessService {
   }
 
   async chat_api_individual_failed_payment_link_alert(
-    clientData: any,
+    clientData: ClientData,
     urlPayment: string,
     chatId: string,
   ): Promise<AxiosResponse> {
@@ -198,9 +198,9 @@ export class SuccessService {
 
   //GENERAL
   async general_create_url_payphone(
-    clientData: any,
-    pocData: any,
-  ): Promise<AxiosResponse> {
+    clientData: ClientData,
+    pocData: PocData,
+  ): Promise<string> {
     const s4 = () => {
       return Math.floor((1 + Math.random()) * 0x10000)
         .toString(16)
@@ -259,8 +259,8 @@ export class SuccessService {
   }
 
   async general_check_url_paymphone(
-    id: any,
-    clientTxId: any,
+    id: string,
+    clientTxId: string,
   ): Promise<AxiosResponse> {
     const body = { id: id, clientTxId: clientTxId };
     const data = await firstValueFrom(
