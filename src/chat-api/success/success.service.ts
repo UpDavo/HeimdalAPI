@@ -32,7 +32,7 @@ export class SuccessService {
   async telegram_group_success_poc_alert(
     clientData: ClientData,
     pocData: PocData,
-  ): Promise<AxiosResponse> {
+  ): Promise<any> {
     const coordenadas: Array<any> = clientData.direccion.coordenadas.split(',');
     const request = {
       chat_id: pocData.tchatId,
@@ -77,7 +77,7 @@ export class SuccessService {
     clientData: ClientData,
     pocData: PocData,
     chatId: string,
-  ): Promise<AxiosResponse> {
+  ): Promise<any> {
     const coordenadas: Array<any> = clientData.direccion.coordenadas.split(',');
     const request = {
       chat_id: chatId,
@@ -125,7 +125,7 @@ export class SuccessService {
     payphoneData: any,
     chatId: string,
     state: string,
-  ): Promise<AxiosResponse> {
+  ): Promise<any> {
     let sendText: string;
     switch (state) {
       case 'successPoc':
@@ -163,9 +163,42 @@ export class SuccessService {
   //CHATAPI - ALERTS TO CLIENTS
   async chat_api_individual_payment_link_alert(
     clientData: ClientData,
-    urlPayment: string,
-  ): Promise<AxiosResponse> {
-    const request = {};
+    shortUrlPath: string,
+  ): Promise<any> {
+    const request = {
+      template: 'cliente_link_de_pago',
+      language: { policy: 'deterministic', code: 'es' },
+      namespace: process.env.NAMESPACE_WHATSAPP,
+      params: [
+        {
+          type: 'body',
+          parameters: [
+            { type: 'text', text: clientData.cliente.nombre },
+            { type: 'text', text: clientData.idOrden },
+            { type: 'text', text: clientData.pago },
+            {
+              type: 'text',
+              text: `${clientData.productos.map(
+                (objeto) =>
+                  `> ${objeto.nombre} - ${objeto.cantidad} - ${objeto.precio}`,
+              )}`,
+            },
+            { type: 'text', text: clientData.total },
+            { type: 'text', text: 'Gratis' },
+            {
+              type: 'text',
+              text: `${clientData.direccion.primaria} | ${clientData.direccion.ciudad}`,
+            },
+          ],
+        },
+        {
+          type: 'button',
+          sub_type: 'url',
+          parameters: [{ type: 'text', text: shortUrlPath }],
+        },
+      ],
+      phone: '593994504722',
+    };
     const data = await firstValueFrom(
       this.httpService.post(
         `${BASEURL.baseUrlChatAPI}/sendTemplate?token=w4zuj9n7xpucl3hk`,
@@ -244,18 +277,14 @@ export class SuccessService {
       domain: '477t.short.gy',
     };
     const urlShorted = await firstValueFrom(
-      this.httpService.post(
-        `https://pay.payphonetodoesposible.com/api/button/Prepare`,
-        requestShort,
-        {
-          headers: {
-            'Content-Type': 'application/json', // afaik this one is not needed
-            Authorization: 'sk_58xXHd6WN1xUFYAw',
-          },
+      this.httpService.post(`https://api.short.io/links`, requestShort, {
+        headers: {
+          'Content-Type': 'application/json', // afaik this one is not needed
+          Authorization: 'sk_58xXHd6WN1xUFYAw',
         },
-      ),
+      }),
     );
-    return urlShorted.data.shortUrl;
+    return urlShorted.data.path;
   }
 
   async general_check_url_paymphone(
@@ -281,7 +310,7 @@ export class SuccessService {
 
   async general_create_user_data_by_vtex_id(id: string) {
     const vtexLink = `https://fiestacerca.myvtex.com/api/oms/pvt/orders/${id}`;
-    let items: Array<any>;
+    const items_new: Array<any> = [];
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -300,7 +329,7 @@ export class SuccessService {
     );
 
     data.data.items.forEach((item: any) => {
-      items.push({
+      items_new.push({
         nombre: item.name,
         cantidad: item.quantity,
         precio: formatter.format(
@@ -350,7 +379,7 @@ export class SuccessService {
       },
       idOrden: data.data.orderId,
       fechaDelPedido: tempYear + '-' + month + '-' + dt,
-      productos: items,
+      productos: items_new,
       idPoc: data.data.sellers[0].id,
       pago: data.data.paymentData.transactions[0].payments[0].paymentSystemName,
       comentario:

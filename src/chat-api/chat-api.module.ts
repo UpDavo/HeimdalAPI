@@ -5,6 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { HttpConfigService } from 'src/httpService.config';
 import { CanceledController } from './canceled/canceled.controller';
 import { CanceledService } from './canceled/canceled.service';
+import { FirebaseConnection } from './common/firebase_connection';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { CanceledService } from './canceled/canceled.service';
     ChatApiModule,
   ],
   controllers: [SuccessController, CanceledController],
-  providers: [SuccessService, CanceledService],
+  providers: [SuccessService, CanceledService, FirebaseConnection],
 })
 export class ChatApiModule {}

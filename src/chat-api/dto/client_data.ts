@@ -4,7 +4,7 @@ export interface ClientData {
   direccion: Direccion;
   idOrden: string;
   fechaDelPedido: string;
-  productos: any[];
+  productos: Producto[];
   idPoc: string;
   pago: string;
   comentario: string;
@@ -23,4 +23,11 @@ export interface Direccion {
   primaria: string;
   ciudad: string;
   coordenadas: string;
+}
+
+export interface Producto {
+  nombre: string;
+  cantidad: string;
+  precio: number;
+  id: string;
 }
