@@ -331,7 +331,7 @@ export class SuccessService {
           ' ' +
           data.data.clientProfileData.lastName,
         celular: data.data.clientProfileData.phone,
-        correo: data.data.clientProfileData.email,
+        correo: data.data.clientProfileData.email.split('-')[0],
       },
       tipoEnvio: 'Domicilio',
       direccion: {

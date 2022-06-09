@@ -3,40 +3,32 @@ import { SuccessService } from './success.service';
 import { Logger } from '@nestjs/common';
 import { ClientData } from '../dto/client_data';
 import { PocData } from '../dto/poc_data';
+import { VtexData } from '../dto/vtex_webhook';
+import { FirebaseConnection } from '../common/firebase_connection';
 
 @Controller('api/success')
 export class SuccessController {
   private readonly logger = new Logger('api/success');
-  constructor(private SuccessService: SuccessService) {}
+  constructor(
+    private SuccessService: SuccessService,
+    private FirebaseConnection: FirebaseConnection,
+  ) {}
 
   @Post()
-  async start_new_order(@Body() request: any, @Res() response) {
+  async start_new_order(@Body() request: VtexData, @Res() response) {
     this.logger.warn('start_new_order');
     this.logger.warn(request);
 
     //Obtiene la data del cliente haciendo una request a vtex
     const clientData: ClientData =
       await this.SuccessService.general_create_user_data_by_vtex_id(
-        request.body.OrderId,
+        request.OrderId,
       );
 
     //Obtener data de los pocs mediante request a firebase
-    const pocDataFirebase = await db
-      .collection('pocs')
-      .doc(clientData.idPoc)
-      .get()
-      .data();
-    //Organiza los datos de firebase
-    const pocData: PocData = {
-      pocId: pocDataFirebase.pocId,
-      pocPayphone: pocDataFirebase.pocPayphone,
-      pocName: pocDataFirebase.name,
-      pocPhone: pocDataFirebase.phone,
-      lastLogin: '',
-      pocSector: pocDataFirebase.direction,
-      groupId: pocDataFirebase.groupId,
-      tchatId: pocDataFirebase.tchatId,
-    };
+    const pocData: PocData = await this.FirebaseConnection.getPocsData(
+      clientData.idPoc,
+    );
 
     //Envía un mensaje al poc
     await this.SuccessService.telegram_group_success_poc_alert(
@@ -66,6 +58,8 @@ export class SuccessController {
       );
     }
 
-    response.status(HttpStatus.CREATED).json(clientData);
+    response
+      .status(HttpStatus.CREATED)
+      .json({ request: request, clientData: clientData, pocData: pocData });
   }
 }
